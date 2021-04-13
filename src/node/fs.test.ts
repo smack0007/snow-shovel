@@ -11,6 +11,7 @@ describe("fs", () => {
             result.sort();
 
             expect(result).toEqual([
+                "Readme.md",
                 join("folder1", "markdown1.md"),
                 join("folder2", "markdown2.md"),
                 "markdown0.md",
