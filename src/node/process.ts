@@ -1,4 +1,11 @@
+import { chdir } from "process";
 import { exec as _exec } from "child_process";
+
+export { cwd } from "process";
+
+export function chDir(directory: string): void {
+    chdir(directory);
+}
 
 export function exec(command: string): Promise<number> {
     return new Promise((resolve, reject) => {

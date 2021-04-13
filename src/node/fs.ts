@@ -9,10 +9,8 @@ import {
     writeFile as _writeFile,
 } from "fs";
 import { extname, join } from "path";
-import { chdir } from "process";
 import { promisify } from "util";
 
-export { cwd } from "process";
 export { dirname as dirName, join, resolve } from "path";
 export { fileURLToPath } from "url";
 
@@ -38,10 +36,6 @@ export async function copyDir(src: string, dest: string): Promise<void> {
 const __copyFile = promisify(_copyFile);
 export async function copyFile(src: string, dest: string): Promise<void> {
     return __copyFile(src, dest);
-}
-
-export function chDir(directory: string): void {
-    chdir(directory);
 }
 
 export async function listFiles(path: string, ext?: string): Promise<string[]> {

@@ -1,5 +1,6 @@
 import { describe, it } from "@test";
-import { chDir, join, listFiles } from "./fs";
+import { join, listFiles } from "./fs";
+import { chDir } from "./process";
 
 chDir(join(__dirname, "..", "..", "sandbox"));
 
