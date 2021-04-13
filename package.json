@@ -1,0 +1,16 @@
+{
+  "name": "snow-shovel",
+  "version": "0.0.1",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jasmine": "^3.6.9",
+    "@types/node": "14.6.1",
+    "jasmine": "^3.7.0",
+    "ts-node": "9.1.1",
+    "typescript": "4.0.2"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "ts-node -r ./src/test/register.ts ./node_modules/jasmine/bin/jasmine ./src/**/*.test.ts"
+  }
+}
