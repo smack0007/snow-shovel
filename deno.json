@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "lib": [
+      "deno.ns",
+      "deno.unstable",
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable"
+    ]
+  },
+  "lint": {
+    "rules": {
+      "tags": [
+        "recommended"
+      ],
+      "include": [
+        "explicit-function-return-type"
+      ]
+    }
+  },
+  "fmt": {
+    "options": {
+      "useTabs": true,
+      "lineWidth": 120,
+      "indentWidth": 2
+    }
+  },
+  "tasks": {}
+}
