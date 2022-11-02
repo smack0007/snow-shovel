@@ -1,8 +1,14 @@
-import { beforeEach } from "https://deno.land/std@0.161.0/testing/bdd.ts";
 import { asserts, bdd } from "../deps.ts";
 const { assertEquals } = asserts;
-const { describe, it } = bdd;
-import { ok, OkResult } from "./result.ts";
+const { beforeEach, describe, it } = bdd;
+import { error, ErrorResult, ok, OkResult } from "./result.ts";
+import { Equal, Expect } from "./tests.ts";
+
+type _tests = [
+	Expect<Equal<OkResult<number>["ok"], true>>,
+
+	Expect<Equal<ErrorResult<number>["ok"], false>>,
+];
 
 describe("Result", () => {
 	describe("ok(42)", () => {
@@ -22,6 +28,26 @@ describe("Result", () => {
 
 		it("should unwrap result", () => {
 			assertEquals(result.unwrap((x) => x.toString()), "42");
+		});
+	});
+
+	describe("error(42)", () => {
+		let result: ErrorResult<number>;
+
+		beforeEach(() => {
+			result = error(42);
+		});
+
+		it("should set ok to false", () => {
+			assertEquals(result.ok, false);
+		});
+
+		it("should set error to 42", () => {
+			assertEquals(result.error, 42);
+		});
+
+		it("should unwrap error", () => {
+			assertEquals(result.unwrap((_) => "Not 42", (x) => x?.toString()), "42");
 		});
 	});
 });
