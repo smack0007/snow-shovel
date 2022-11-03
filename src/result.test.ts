@@ -7,8 +7,12 @@ import { Equal, Expect } from "./tests.ts";
 
 type TypeTests = [
 	Expect<Equal<OkResult<number>["isOk"], true>>,
+	Expect<Equal<OkResult<number>["isError"], false>>,
+	Expect<Equal<OkResult<number>["value"], number>>,
 
 	Expect<Equal<ErrorResult<number>["isOk"], false>>,
+	Expect<Equal<ErrorResult<number>["isError"], true>>,
+	Expect<Equal<ErrorResult<number>["error"], number>>,
 ];
 
 describe("Result", () => {
@@ -93,7 +97,7 @@ describe("Result", () => {
 		});
 
 		it("should not call predicate if isOk is false", () => {
-			const result = error(42);
+			const result = error(42) as Result<number, number>;
 
 			let predicateCalled = false;
 			const isOkAndResult = result.isOkAnd((_) => {

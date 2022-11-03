@@ -26,16 +26,18 @@ interface ResultMethods<T, E> {
 }
 
 interface ResultProperties<T, E> {
+	readonly isOk: boolean;
+
 	readonly isError: boolean;
 }
 
 export type OkResult<T> =
-	& { readonly isOk: true; value: T }
+	& { readonly isOk: true; readonly isError: false; value: T }
 	& ResultMethods<T, unknown>
 	& ResultProperties<T, unknown>;
 
 export type ErrorResult<E> =
-	& { readonly isOk: false; error: E }
+	& { readonly isOk: false; readonly isError: true; error: E }
 	& ResultMethods<unknown, E>
 	& ResultProperties<unknown, E>;
 
@@ -75,7 +77,7 @@ const methods = {
 		this: Result<T, E>,
 		predicate: Predicate<E>,
 	): boolean {
-		return this.isError && predicate((this as ErrorResult<E>).error);
+		return this.isError && predicate(this.error);
 	},
 
 	map: function <T, E, U>(
@@ -89,7 +91,7 @@ const methods = {
 		this: Result<T, E>,
 		callback: (value: E) => F,
 	): Result<T, F> {
-		return !this.isOk ? error(callback(this.error)) : this;
+		return this.isError ? error(callback(this.error)) : this;
 	},
 
 	or: function <T, E>(
@@ -113,7 +115,7 @@ const methods = {
 		this: Result<T, E>,
 		error?: (error: E) => F,
 	): E | F {
-		return !this.isOk ? (error ? error(this.error) : this.error) : throwError("Failed to unwrap error.", this.value);
+		return this.isError ? (error ? error(this.error) : this.error) : throwError("Failed to unwrap error.", this.value);
 	},
 
 	unwrapOr: function <T, E>(
