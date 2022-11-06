@@ -1,23 +1,23 @@
-import { assertThrows } from "https://deno.land/std@0.159.0/testing/asserts.ts";
+import { assertExists, assertThrows } from "https://deno.land/std@0.159.0/testing/asserts.ts";
 import { asserts, bdd } from "../deps.ts";
 const { assertEquals } = asserts;
 const { beforeEach, describe, it } = bdd;
-import { error, ErrorResult, ok, OkResult, Result } from "./result.ts";
+import { error, ok, Result } from "./result.ts";
 import { Equal, Expect } from "./tests.ts";
 
-type TypeTests = [
-	Expect<Equal<OkResult<number>["isOk"], true>>,
-	Expect<Equal<OkResult<number>["isError"], false>>,
-	Expect<Equal<OkResult<number>["value"], number>>,
+// type TypeTests = [
+// 	Expect<Equal<OkResult<number>["isOk"], true>>,
+// 	Expect<Equal<OkResult<number>["isError"], false>>,
+// 	Expect<Equal<OkResult<number>["value"], number>>,
 
-	Expect<Equal<ErrorResult<number>["isOk"], false>>,
-	Expect<Equal<ErrorResult<number>["isError"], true>>,
-	Expect<Equal<ErrorResult<number>["error"], number>>,
-];
+// 	Expect<Equal<ErrorResult<number>["isOk"], false>>,
+// 	Expect<Equal<ErrorResult<number>["isError"], true>>,
+// 	Expect<Equal<ErrorResult<number>["error"], number>>,
+// ];
 
 describe("Result", () => {
 	describe("ok(42)", () => {
-		let result: OkResult<number>;
+		let result: Result<number, unknown>;
 
 		beforeEach(() => {
 			result = ok(42);
@@ -37,7 +37,7 @@ describe("Result", () => {
 	});
 
 	describe("error(42)", () => {
-		let result: ErrorResult<number>;
+		let result: Result<unknown, number>;
 
 		beforeEach(() => {
 			result = error(42);
@@ -64,14 +64,14 @@ describe("Result", () => {
 			assertEquals(result1.and(result2), result2);
 
 			const result3 = ok(42);
-			const result4 = error(12);
+			const result4 = error(12) as unknown as Result<number, never>;
 
 			assertEquals(result3.and(result4), result4);
 		});
 
 		it("should take self if isOk is false", () => {
 			const result1 = error(42);
-			const result2 = ok(12);
+			const result2 = ok(12) as unknown as Result<never, number>;
 
 			assertEquals(result1.and(result2), result1);
 
@@ -79,6 +79,26 @@ describe("Result", () => {
 			const result4 = error(12);
 
 			assertEquals(result3.and(result4), result3);
+		});
+	});
+
+	describe("andThen", () => {
+		function ensureInt(value: number): Result<number, string> {
+			if (isNaN(value)) {
+				return error("NaN");
+			}
+
+			if (!Number.isInteger(value)) {
+				return error("!int");
+			}
+
+			return ok(value);
+		}
+
+		it("should call op if isOk", () => {
+			const result = ensureInt(42).andThen((x) => ok(x + 12));
+			assertEquals(result.isOk, true);
+			assertEquals(result.value, 54);
 		});
 	});
 
@@ -186,14 +206,14 @@ describe("Result", () => {
 			assertEquals(result1.or(result2), result1);
 
 			const result3 = ok(42);
-			const result4 = error(12);
+			const result4 = error(12) as unknown as Result<number, never>;
 
 			assertEquals(result3.or(result4), result3);
 		});
 
 		it("should take other if isOk is false", () => {
 			const result1 = error(42);
-			const result2 = ok(12);
+			const result2 = ok(12) as unknown as Result<never, number>;
 
 			assertEquals(result1.or(result2), result2);
 
@@ -246,7 +266,7 @@ describe("Result", () => {
 		});
 
 		it("should take default for error", () => {
-			const result = error(42);
+			const result = error(42) as unknown as Result<number, number>;
 			assertEquals(result.unwrapOr(12), 12);
 		});
 	});
@@ -258,7 +278,7 @@ describe("Result", () => {
 		});
 
 		it("should call callback for error", () => {
-			const result = error(42);
+			const result = error(42) as unknown as Result<number, number>;
 			assertEquals(result.unwrapOrElse(() => 12), 12);
 		});
 	});

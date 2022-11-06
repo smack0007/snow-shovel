@@ -1,7 +1,15 @@
 type Predicate<T> = (value: T) => boolean;
 
-interface ResultMethods<T, E> {
+export interface Result<T, E> {
+	readonly isOk: boolean;
+	readonly isError: boolean;
+
+	readonly value: T;
+	readonly error: E;
+
 	and(other: Result<T, E>): Result<T, E>;
+
+	andThen<U, F>(op: (value: T) => Result<U, F>): Result<T | U, E | F>;
 
 	isOkAnd(predicate: Predicate<T>): boolean;
 
@@ -22,28 +30,8 @@ interface ResultMethods<T, E> {
 
 	unwrapOr(defaultValue: T): T;
 
-	unwrapOrElse(callback: () => T): T;
+	unwrapOrElse(op: () => T): T;
 }
-
-interface ResultProperties<T, E> {
-	readonly isOk: boolean;
-
-	readonly isError: boolean;
-}
-
-export type OkResult<T> =
-	& { readonly isOk: true; readonly isError: false; value: T }
-	& ResultMethods<T, unknown>
-	& ResultProperties<T, unknown>;
-
-export type ErrorResult<E> =
-	& { readonly isOk: false; readonly isError: true; error: E }
-	& ResultMethods<unknown, E>
-	& ResultProperties<unknown, E>;
-
-export type Result<T, E = unknown> =
-	| OkResult<T>
-	| ErrorResult<E>;
 
 export class ResultError<E> extends Error {
 	constructor(
@@ -66,6 +54,13 @@ const methods = {
 		return this.isOk ? other : this;
 	},
 
+	andThen: function <T, U, E, F>(
+		this: Result<T, E>,
+		op: (value: T) => Result<U, F>,
+	): Result<T | U, E | F> {
+		return this.isOk ? op(this.value) : this;
+	},
+
 	isOkAnd: function <T, E>(
 		this: Result<T, E>,
 		predicate: Predicate<T>,
@@ -84,14 +79,14 @@ const methods = {
 		this: Result<T, E>,
 		callback: (value: T) => U,
 	): Result<U, E> {
-		return this.isOk ? ok(callback(this.value)) : this;
+		return this.isOk ? ok(callback(this.value)) as Result<U, E> : this as unknown as Result<U, E>;
 	},
 
 	mapError: function <T, E, F>(
 		this: Result<T, E>,
 		callback: (value: E) => F,
 	): Result<T, F> {
-		return this.isError ? error(callback(this.error)) : this;
+		return this.isError ? error(callback(this.error)) : this as unknown as Result<T, F>;
 	},
 
 	or: function <T, E>(
@@ -141,18 +136,18 @@ const properties: PropertyDescriptorMap = {
 	},
 };
 
-export function ok<T>(value: T): OkResult<T> {
+export function ok<T>(value: T): Result<T, never> {
 	return Object.create({
 		isOk: true,
 		value,
-		...(methods as ResultMethods<T, unknown>),
+		...methods,
 	}, properties);
 }
 
-export function error<E>(error: E): ErrorResult<E> {
+export function error<E>(error: E): Result<never, E> {
 	return Object.create({
 		isOk: false,
 		error,
-		...(methods as ResultMethods<unknown, E>),
+		...methods,
 	}, properties);
 }
